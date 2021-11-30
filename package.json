@@ -1,17 +1,24 @@
 {
-  "name": "@levxdao/hardhat-foundation",
+  "name": "@levxdao/airdrop",
+  "version": "1.0.0",
   "description": "",
   "keywords": [
     "levx",
     "levx-dao"
   ],
-  "homepage": "https://github.com/levxdao/hardhat-foundation#readme",
+  "homepage": "https://github.com/levxdao/airdrop#readme",
   "bugs": {
-    "url": "https://github.com/levxdao/hardhat-foundation/issues",
+    "url": "https://github.com/levxdao/airdrop/issues",
     "email": "team@levx.io"
   },
   "license": "WTFPL",
   "author": "LevX <team@levx.io>",
+  "files": [
+    "artifacts",
+    "contracts",
+    "deployments",
+    "typechain"
+  ],
   "scripts": {
     "build": "hardhat compile",
     "console": "hardhat console",
