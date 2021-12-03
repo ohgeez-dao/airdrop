@@ -43,7 +43,7 @@ contract ERC20Airdrops is MerkleProof {
     ) external {
         address wallet = walletOf[token][merkleRoot];
         require(wallet != address(0), "LEVX: INVALID_ROOT");
-        require(deadlineOf[token][merkleRoot] < block.timestamp, "LEVX: EXPIRED");
+        require(block.timestamp < deadlineOf[token][merkleRoot], "LEVX: EXPIRED");
 
         bytes32 leaf = keccak256(abi.encodePacked(msg.sender, amount));
         require(!_hasClaimed[token][merkleRoot][leaf], "LEVX: FORBIDDEN");
