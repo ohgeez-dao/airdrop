@@ -38,7 +38,13 @@ contract LevxStreaming is Ownable, MerkleProof {
 
     event ChangeSigner(address indexed signer);
     event Add(bytes32 indexed merkleRoot, AuthType authType, uint32 deadline, address indexed wallet);
-    event Start(bytes32 indexed hash, bytes32 indexed merkleRoot, address indexed recipient, uint256 amount);
+    event Start(
+        bytes32 indexed hash,
+        bytes32 indexed merkleRoot,
+        bytes32 indexed id,
+        address recipient,
+        uint256 amount
+    );
     event Claim(bytes32 indexed hash, address indexed recipient, uint256 amount);
 
     constructor(
@@ -80,7 +86,7 @@ contract LevxStreaming is Ownable, MerkleProof {
     function start(
         bytes32 merkleRoot,
         bytes32[] calldata merkleProof,
-        bytes memory data
+        bytes memory authData
     ) external {
         Distribution storage distribution = distributionOf[merkleRoot];
         address wallet = distribution.wallet;
@@ -89,7 +95,7 @@ contract LevxStreaming is Ownable, MerkleProof {
         uint32 _now = uint32(block.timestamp);
         require(_now < distribution.deadline, "LEVX: EXPIRED");
 
-        (uint256 amount, bytes32 leaf) = _parseData(distribution.authType, data);
+        (bytes32 id, uint256 amount, bytes32 leaf) = _parseAuthData(distribution.authType, authData);
         require(amount > 0, "LEVX: INVALID_AMOUNT");
         require(verify(merkleRoot, leaf, merkleProof), "LEVX: INVALID_PROOF");
 
@@ -102,20 +108,30 @@ contract LevxStreaming is Ownable, MerkleProof {
 
         IERC20(levx).safeTransferFrom(wallet, address(this), amount);
 
-        emit Start(hash, merkleRoot, msg.sender, amount);
+        emit Start(hash, merkleRoot, id, msg.sender, amount);
     }
 
-    function _parseData(AuthType authType, bytes memory data) internal view returns (uint256 amount, bytes32 leaf) {
+    function _parseAuthData(AuthType authType, bytes memory data)
+        internal
+        view
+        returns (
+            bytes32 id,
+            uint256 amount,
+            bytes32 leaf
+        )
+    {
         if (authType == AuthType.ETHEREUM) {
+            id = bytes32(uint256(uint160(msg.sender)));
             amount = abi.decode(data, (uint256));
             leaf = keccak256(abi.encodePacked(msg.sender, amount));
         } else {
-            (string memory id, uint256 _amount, uint8 v, bytes32 r, bytes32 s) = abi.decode(
+            (bytes32 _id, uint256 _amount, uint8 v, bytes32 r, bytes32 s) = abi.decode(
                 data,
-                (string, uint256, uint8, bytes32, bytes32)
+                (bytes32, uint256, uint8, bytes32, bytes32)
             );
-            require(bytes(id).length > 0, "LEVX: INVALID_ID");
+            require(_id > 0, "LEVX: INVALID_ID");
 
+            id = _id;
             amount = _amount;
             leaf = keccak256(abi.encodePacked(id, amount));
             require(ECDSA.recover(ECDSA.toEthSignedMessageHash(leaf), v, r, s) == signer, "LEVX: UNAUTHORIZED");
