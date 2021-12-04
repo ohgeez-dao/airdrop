@@ -32,15 +32,31 @@ contract LevxStreaming is Ownable, MerkleProof {
     }
 
     address public immutable levx;
+    address public signer;
     mapping(bytes32 => Distribution) public distributionOf;
     mapping(bytes32 => Streaming) public streamingOf;
 
+    event ChangeSigner(address indexed signer);
     event Add(bytes32 indexed merkleRoot, AuthType authType, uint32 deadline, address indexed wallet);
     event Start(bytes32 indexed hash, bytes32 indexed merkleRoot, address indexed recipient, uint256 amount);
     event Claim(bytes32 indexed hash, address indexed recipient, uint256 amount);
 
-    constructor(address _levx) {
+    constructor(
+        address _owner,
+        address _levx,
+        address _signer
+    ) {
         levx = _levx;
+        signer = _signer;
+        _transferOwnership(_owner);
+
+        emit ChangeSigner(_signer);
+    }
+
+    function changeSigner(address _signer) external onlyOwner {
+        signer = _signer;
+
+        emit ChangeSigner(_signer);
     }
 
     function add(
@@ -102,7 +118,7 @@ contract LevxStreaming is Ownable, MerkleProof {
 
             amount = _amount;
             leaf = keccak256(abi.encodePacked(id, amount));
-            require(ECDSA.recover(ECDSA.toEthSignedMessageHash(leaf), v, r, s) == owner(), "LEVX: UNAUTHORIZED");
+            require(ECDSA.recover(ECDSA.toEthSignedMessageHash(leaf), v, r, s) == signer, "LEVX: UNAUTHORIZED");
         }
     }
 
