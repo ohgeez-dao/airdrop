@@ -1,6 +1,6 @@
 {
   "name": "@levxdao/airdrop",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "description": "",
   "keywords": [
     "levx",
@@ -45,7 +45,8 @@
     "arbitrum:export": "hardhat --network arbitrum export --export exports/arbitrum.json",
     "test": "cross-env TS_NODE_TRANSPILE_ONLY=1 hardhat test",
     "test:coverage": "cross-env NODE_OPTIONS=\"--max-old-space-size=4096\" hardhat coverage",
-    "test:gas": "cross-env REPORT_GAS=true yarn test"
+    "test:gas": "cross-env REPORT_GAS=true yarn test",
+    "prepublish": "yarn build"
   },
   "lint-staged": {
     "*.ts": [
