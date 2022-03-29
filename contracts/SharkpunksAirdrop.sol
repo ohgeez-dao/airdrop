@@ -3,12 +3,9 @@
 pragma solidity =0.8.3;
 
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
-import "@openzeppelin/contracts/utils/Address.sol";
 import "@shoyunft/contracts/contracts/interfaces/INFT721.sol";
 
 contract SharkpunksAirdrop {
-    using Address for address;
-
     address public immutable sharkpunks;
     address public immutable signer;
     uint64 public immutable deadline;
