@@ -100,6 +100,7 @@
     "typescript": "^4.3.0"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^4.3.2"
+    "@openzeppelin/contracts": "^4.3.2",
+    "@shoyunft/contracts": "^1.1.2"
   }
 }
