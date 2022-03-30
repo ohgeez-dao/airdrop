@@ -6,8 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@shoyunft/contracts/contracts/interfaces/INFT721.sol";
 
-contract SharkpunksAirdrops is Ownable {
-    address public immutable sharkpunks;
+contract NFTAirdrops is Ownable {
+    address public immutable nftContract;
     mapping(bytes32 => Airdrop) public airdrops;
     mapping(bytes32 => mapping(bytes32 => bool)) _minted;
     uint256 internal _tokenId;
@@ -22,8 +22,8 @@ contract SharkpunksAirdrops is Ownable {
     event Add(bytes32 indexed slug, address signer, uint32 deadline, uint32 max);
     event Claim(bytes32 indexed slug, bytes32 indexed id, address indexed to, uint256 tokenId);
 
-    constructor(address _sharkpunks, uint256 fromTokenId) {
-        sharkpunks = _sharkpunks;
+    constructor(address _nftContract, uint256 fromTokenId) {
+        nftContract = _nftContract;
         _tokenId = fromTokenId;
     }
 
@@ -75,6 +75,6 @@ contract SharkpunksAirdrops is Ownable {
 
         uint256 tokenId = _tokenId++;
         emit Claim(slug, id, to, tokenId);
-        INFT721(sharkpunks).mint(to, tokenId, data);
+        INFT721(nftContract).mint(to, tokenId, data);
     }
 }
