@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@shoyunft/contracts/contracts/interfaces/INFT721.sol";
 
-contract SharkpunksAirdrop is Ownable {
+contract SharkpunksAirdrops is Ownable {
     address public immutable sharkpunks;
     mapping(bytes32 => Airdrop) public airdrops;
     mapping(bytes32 => mapping(bytes32 => bool)) _minted;
