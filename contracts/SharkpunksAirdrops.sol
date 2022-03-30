@@ -53,17 +53,24 @@ contract SharkpunksAirdrops is Ownable {
         bytes32 s
     ) external {
         Airdrop storage airdrop = airdrops[slug];
-        address signer = airdrop.signer;
+        (address signer, uint32 deadline, uint32 max, uint32 minted) = (
+            airdrop.signer,
+            airdrop.deadline,
+            airdrop.max,
+            airdrop.minted
+        );
 
         require(signer != address(0), "LEVX: INVALID_SLUG");
-        require(airdrop.max == 0 || airdrop.minted < airdrop.max, "LEVX: FINISHED");
-        require(uint32(block.timestamp) < airdrop.deadline, "LEVX: EXPIRED");
+        require(deadline == 0 || uint32(block.timestamp) < deadline, "LEVX: EXPIRED");
+        require(max == 0 || minted < max, "LEVX: FINISHED");
         require(!_minted[slug][id], "LEVX: MINTED");
 
-        bytes32 message = keccak256(abi.encodePacked(slug, id));
-        require(ECDSA.recover(ECDSA.toEthSignedMessageHash(message), v, r, s) == signer, "LEVX: UNAUTHORIZED");
+        {
+            bytes32 message = keccak256(abi.encodePacked(slug, id));
+            require(ECDSA.recover(ECDSA.toEthSignedMessageHash(message), v, r, s) == signer, "LEVX: UNAUTHORIZED");
+        }
 
-        airdrop.minted++;
+        airdrop.minted = minted + 1;
         _minted[slug][id] = true;
 
         uint256 tokenId = _tokenId++;
