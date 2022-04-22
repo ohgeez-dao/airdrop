@@ -64,11 +64,11 @@ contract NFTAirdrops is Ownable {
     function claim(
         bytes32 slug,
         bytes32 id,
-        address to,
-        bytes calldata data,
         uint8 v,
         bytes32 r,
-        bytes32 s
+        bytes32 s,
+        address to,
+        bytes calldata data
     ) external {
         Airdrop storage airdrop = airdrops[slug];
         (address signer, uint32 deadline, uint32 max, uint32 minted) = (
