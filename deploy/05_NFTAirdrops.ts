@@ -2,11 +2,11 @@ export default async ({ getNamedAccounts, deployments }) => {
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    const levx = "0xf474E526ADe9aD2CC2B66ffCE528B1A51B91FCdC";
+    const contract = "0xa59a5B0C946086d6884455A6a556729d747d16D3";
 
-    await deploy("LevxPayout", {
+    await deploy("NFTAirdrops", {
         from: deployer,
-        args: [levx],
+        args: [contract, 574],
         log: true,
     });
 };
