@@ -6,20 +6,11 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@shoyunft/contracts/contracts/interfaces/INFT721.sol";
 
-interface IDelegate {
-    function canClaim(
-        bytes calldata params,
-        uint8 v,
-        bytes32 r,
-        bytes32 s
-    ) external returns (bool);
-}
-
 contract NFTAirdrops is Ownable {
     address public immutable nftContract;
     mapping(bytes32 => Airdrop) public airdrops;
-    mapping(bytes32 => mapping(bytes32 => bool)) _minted;
-    mapping(address => bool) isDelegate;
+    mapping(address => bool) public isMinter;
+    mapping(bytes32 => mapping(bytes32 => bool)) internal _minted;
     uint256 internal _tokenId;
 
     struct Airdrop {
@@ -29,20 +20,19 @@ contract NFTAirdrops is Ownable {
         uint32 minted;
     }
 
-    event SetDelegate(address account, bool indexed isDelegate);
+    event SetMinter(address account, bool indexed isMinter);
     event Add(bytes32 indexed slug, address signer, uint32 deadline, uint32 max);
     event Claim(bytes32 indexed slug, bytes32 indexed id, address indexed to, uint256 tokenId);
-    event ClaimDelegated(address indexed to, uint256 tokenId);
 
     constructor(address _nftContract, uint256 fromTokenId) {
         nftContract = _nftContract;
         _tokenId = fromTokenId;
     }
 
-    function setDelegate(address account, bool _isDelegate) external onlyOwner {
-        isDelegate[account] = _isDelegate;
+    function setMinter(address account, bool _isMinter) external onlyOwner {
+        isMinter[account] = _isMinter;
 
-        emit SetDelegate(account, _isDelegate);
+        emit SetMinter(account, _isMinter);
     }
 
     function add(
@@ -96,19 +86,13 @@ contract NFTAirdrops is Ownable {
         INFT721(nftContract).mint(to, tokenId, data);
     }
 
-    function claimDelegated(
-        address delegate,
-        bytes calldata params,
-        uint8 v,
-        bytes32 r,
-        bytes32 s,
+    function mint(
         address to,
         uint256 tokenId,
         bytes calldata data
     ) external {
-        require(isDelegate[delegate], "LEVX: NO_DELEGATE");
-        require(IDelegate(delegate).canClaim(params, v, r, s), "LEVX: NOT_CLAIMABLE");
-        emit ClaimDelegated(to, tokenId);
+        require(isMinter[msg.sender], "LEVX: FORBIDDEN");
+
         INFT721(nftContract).mint(to, tokenId, data);
     }
 }
