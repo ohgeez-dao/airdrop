@@ -35,6 +35,50 @@ contract NFTAirdrops is Ownable {
         emit SetMinter(account, _isMinter);
     }
 
+    function transferOwnershipOfNFTContract(address newOwner) external onlyOwner {
+        INFT721(nftContract).transferOwnership(newOwner);
+    }
+
+    function setRoyaltyFeeRecipient(address _royaltyFeeRecipient) external onlyOwner {
+        INFT721(nftContract).setRoyaltyFeeRecipient(_royaltyFeeRecipient);
+    }
+
+    function setRoyaltyFee(uint8 _royaltyFee) external onlyOwner {
+        INFT721(nftContract).setRoyaltyFee(_royaltyFee);
+    }
+
+    function setTokenURI(uint256 tokenId, string memory uri) external onlyOwner {
+        INFT721(nftContract).setTokenURI(tokenId, uri);
+    }
+
+    function setBaseURI(string memory baseURI) external onlyOwner {
+        INFT721(nftContract).setBaseURI(baseURI);
+    }
+
+    function parkTokenIds(uint256 toTokenId) external onlyOwner {
+        INFT721(nftContract).parkTokenIds(toTokenId);
+    }
+
+    function mint(
+        address to,
+        uint256 tokenId,
+        bytes calldata data
+    ) external {
+        require(msg.sender == owner() || isMinter[msg.sender], "LEVX: FORBIDDEN");
+
+        INFT721(nftContract).mint(to, tokenId, data);
+    }
+
+    function mintBatch(
+        address to,
+        uint256[] calldata tokenIds,
+        bytes calldata data
+    ) external {
+        require(msg.sender == owner() || isMinter[msg.sender], "LEVX: FORBIDDEN");
+
+        INFT721(nftContract).mintBatch(to, tokenIds, data);
+    }
+
     function add(
         bytes32 slug,
         address signer,
@@ -83,16 +127,6 @@ contract NFTAirdrops is Ownable {
 
         uint256 tokenId = _tokenId++;
         emit Claim(slug, id, to, tokenId);
-        INFT721(nftContract).mint(to, tokenId, data);
-    }
-
-    function mint(
-        address to,
-        uint256 tokenId,
-        bytes calldata data
-    ) external {
-        require(isMinter[msg.sender], "LEVX: FORBIDDEN");
-
         INFT721(nftContract).mint(to, tokenId, data);
     }
 }
