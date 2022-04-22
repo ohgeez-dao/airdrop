@@ -14,13 +14,14 @@
   "license": "WTFPL",
   "author": "LevX <team@levx.io>",
   "files": [
+    "abis",
     "artifacts",
     "contracts",
     "deployments",
     "typechain"
   ],
   "scripts": {
-    "build": "hardhat compile",
+    "build": "rimraf abis artifacts cache coverage typechain && hardhat compile",
     "console": "hardhat console",
     "hardhat:deploy": "hardhat deploy",
     "mainnet:deploy": "hardhat --network mainnet deploy",
@@ -82,6 +83,7 @@
     "ethereum-waffle": "^3.3.0",
     "ethers": "^5.3.0",
     "hardhat": "^2.6.7",
+    "hardhat-abi-exporter": "^2.8.0",
     "hardhat-deploy": "^0.8.6",
     "hardhat-deploy-ethers": "^0.3.0-beta.10",
     "hardhat-gas-reporter": "^1.0.0",
@@ -93,6 +95,7 @@
     "lint-staged": "^11.0.0",
     "prettier": "^2.3.1",
     "prettier-plugin-solidity": "^1.0.0-beta.3",
+    "rimraf": "^3.0.2",
     "solidity-coverage": "^0.7.0",
     "ts-generator": "^0.1.0",
     "ts-node": "^10.0.0",
