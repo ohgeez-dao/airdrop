@@ -5,9 +5,15 @@ pragma solidity =0.8.3;
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/cryptography/ECDSA.sol";
 import "@shoyunft/contracts/contracts/interfaces/INFT721.sol";
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 
 contract NFTAirdropsForOhGeez is Ownable {
+    using SafeERC20 for IERC20;
+
     address public immutable nftContract;
+    address public immutable levx;
+    address public immutable wallet;
     mapping(bytes32 => Airdrop) public airdrops;
     mapping(address => bool) public isMinter;
     mapping(bytes32 => mapping(bytes32 => bool)) internal _minted;
@@ -21,10 +27,16 @@ contract NFTAirdropsForOhGeez is Ownable {
 
     event SetMinter(address account, bool indexed isMinter);
     event Add(bytes32 indexed slug, address signer, uint64 deadline, uint256 fromTokenId, uint256 maxTokenId);
-    event Claim(bytes32 indexed slug, bytes32 indexed id, address indexed to, uint256 tokenId);
+    event Claim(bytes32 indexed slug, bytes32 indexed id, address indexed to, uint256 tokenId, uint256 price);
 
-    constructor(address _nftContract) {
+    constructor(
+        address _nftContract,
+        address _levx,
+        address _wallet
+    ) {
         nftContract = _nftContract;
+        levx = _levx;
+        wallet = _wallet;
     }
 
     function setMinter(address account, bool _isMinter) external onlyOwner {
@@ -99,6 +111,7 @@ contract NFTAirdropsForOhGeez is Ownable {
         bytes32 slug,
         bytes32 id,
         uint256 tokenId,
+        uint256 price,
         uint8 v,
         bytes32 r,
         bytes32 s,
@@ -106,18 +119,18 @@ contract NFTAirdropsForOhGeez is Ownable {
         bytes calldata data
     ) external {
         Airdrop storage airdrop = airdrops[slug];
-        (address signer, uint64 deadline) = (airdrop.signer, airdrop.deadline);
+        {
+            (address signer, uint64 deadline) = (airdrop.signer, airdrop.deadline);
 
-        require(signer != address(0), "LEVX: INVALID_SLUG");
-        require(deadline == 0 || uint64(block.timestamp) < deadline, "LEVX: EXPIRED");
-        require(!_minted[slug][id], "LEVX: MINTED");
+            require(signer != address(0), "LEVX: INVALID_SLUG");
+            require(deadline == 0 || uint64(block.timestamp) < deadline, "LEVX: EXPIRED");
+            require(!_minted[slug][id], "LEVX: MINTED");
+
+            bytes32 message = keccak256(abi.encodePacked(slug, id, tokenId, price));
+            require(ECDSA.recover(ECDSA.toEthSignedMessageHash(message), v, r, s) == signer, "LEVX: UNAUTHORIZED");
+        }
 
         {
-            bytes32 message = keccak256(abi.encodePacked(slug, id, tokenId));
-            require(ECDSA.recover(ECDSA.toEthSignedMessageHash(message), v, r, s) == signer, "LEVX: UNAUTHORIZED");
-
-            _minted[slug][id] = true;
-
             (uint256 nextTokenId, uint256 maxTokenId) = (airdrop.nextTokenId, airdrop.maxTokenId);
 
             if (tokenId == 0) {
@@ -135,7 +148,10 @@ contract NFTAirdropsForOhGeez is Ownable {
             }
         }
 
-        emit Claim(slug, id, to, tokenId);
+        _minted[slug][id] = true;
+
+        emit Claim(slug, id, to, tokenId, price);
+        if (price > 0) IERC20(levx).safeTransferFrom(msg.sender, wallet, price);
         INFT721(nftContract).mint(to, tokenId, data);
     }
 }
