@@ -6,7 +6,7 @@ export default async ({ getNamedAccounts, deployments }) => {
 
     await deploy("NFTAirdropsForOhGeez", {
         from: deployer,
-        args: [contract, 399],
+        args: [contract, 1],
         log: true,
     });
 };
