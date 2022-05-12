@@ -2,7 +2,7 @@ export default async ({ getNamedAccounts, deployments }) => {
     const { deploy } = deployments;
     const { deployer } = await getNamedAccounts();
 
-    const contract = "0xa59a5B0C946086d6884455A6a556729d747d16D3";
+    const contract = "0xb79fa5c237D27dA6b062F9180717CD6169ba0c65";
 
     await deploy("NFTAirdrops2", {
         from: deployer,
