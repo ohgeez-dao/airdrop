@@ -59,15 +59,15 @@ contract LevxPayout is Ownable {
         require(payout.stoppedAt == 0, "LEVX: STOPPED");
 
         uint256 released = _amountReleased(payout);
-        uint256 remaining = payout.amount - released;
-        require(remaining > 0, "LEVX: FINISHED");
+        uint256 pending = released - payout.claimed;
+        uint256 unreleased = payout.amount - released;
+        require(unreleased > 0, "LEVX: FINISHED");
 
         payout.claimed = released;
         payout.stoppedAt = uint32(block.timestamp);
 
-        uint256 pending = released - payout.claimed;
         emit Stop(id, pending);
-        IERC20(levx).safeTransfer(payout.wallet, remaining);
+        IERC20(levx).safeTransfer(payout.wallet, unreleased);
         if (pending > 0) {
             IERC20(levx).safeTransfer(payout.recipient, pending);
         }
